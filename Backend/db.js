@@ -5,7 +5,7 @@ connectToMongo = () => {
     mongoose.connect(mongoURI, {
     },).then((res) => {
         console.log("Database connected");
-    }).catch(error => {
+    }).catch((error) => {
         console.log(error);
     });
     }
