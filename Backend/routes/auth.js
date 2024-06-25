@@ -23,8 +23,9 @@ router.post(
   async (req, res) => {
     //if there are errors return bad request and the errors
     const errors = validationResult(req);
+    let success = false;
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success ,errors: errors.array() });
     }
     //Check whether the user with this email exists already
     try {
@@ -34,7 +35,7 @@ router.post(
       if (user) {
         return res
           .status(400)
-          .json({ error: "Sorry the user with this email exists already" });
+          .json({ success,error: "Sorry the user with this email exists already" });
       }
 
       //hashing password and adding salt to it
@@ -59,10 +60,12 @@ router.post(
 
       // creating a token to send to user after succesfull creation of account adding secret password to id
       const authtoken = jwt.sign(data, JWT_Secret);
-      res.json(authtoken);
+      success=true;
+      res.json({success,authtoken});
     } catch (error) {
       console.log(error.message);
-      res.status(500).send("Some Error Occurred");
+      success=false;
+      res.status(500).send({success,error:"Some Error Occurred"});
     }
   }
 );
@@ -79,7 +82,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
+    let success = false;
     //destructing the body to store email and body
     const { email, password } = req.body;
 
@@ -88,8 +91,8 @@ router.post(
       let user = await User.findOne({ email });
 
       //if email entered is wrong i.e no email found in the DB
-      if (!user) {
-        return res.status(404).json("Invalid Email or Password");
+      if (!user) {  
+        return res.status(404).json({success, error:"Invalid Email or Password"});
       }
 
       //comparing password sent through json with the encrypted password in the database with hashing and salt
@@ -97,7 +100,7 @@ router.post(
 
       //if password is not matched
       if (!passwordCompare) {
-        return res.status(404).json("Invalid Email or Password");
+        return res.status(404).json({success, error:"Invalid Email or Password"});
       }
 
       //undetstand this
@@ -108,7 +111,8 @@ router.post(
       };
 
       const authtoken = jwt.sign(data, JWT_Secret);
-      res.json(authtoken);
+      success=true
+      res.json({success,authtoken});
     } catch (error) {
       console.log(error.message);
       res.status(500).send("Some Error Occurred");
